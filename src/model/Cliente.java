@@ -2,6 +2,9 @@ package model;//nome do pacote
 
 //importações necessarias
 import java.io.Serializable;
+import java.time.LocalDate;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -21,16 +24,21 @@ private String nome;
 private String endereco;
 private String email;
 
+@Column(columnDefinition="Date")
+private LocalDate dpAniversario; 
+
+
 public Cliente() {
 
 }
 //construtor da classe cliente
-public Cliente(String cpf, String nome, String endereco, String email) {
+public Cliente(String cpf, String nome, String endereco, String email, LocalDate dpAniversario) {
 super();
 this.cpf = cpf;
 this.nome = nome;
 this.endereco = endereco;
 this.email = email;
+this.dpAniversario = dpAniversario;
 }
 //gets e sets
 public Integer getId() {
@@ -72,5 +80,11 @@ return email;
 public void setEmail(String email) {
 this.email = email;
 	}
+public LocalDate getDpAniversario() {
+	return dpAniversario;
+}
+public void setDpAniversario(LocalDate dpAniversario) {
+	this.dpAniversario = dpAniversario;
+}
 
 }

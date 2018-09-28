@@ -12,12 +12,13 @@ import javax.persistence.Query;
 import factory.JPAFactory;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -31,6 +32,12 @@ import model.Cliente;
 public class ClienteController implements Initializable {
 	// lista de componentes do aquivo.fxml
 	private Cliente cliente;
+	@FXML
+    private Label lbAniversario;
+
+    @FXML
+    private DatePicker dpAniversario;
+	
 	@FXML
 	private TextField tfNome, tfCpf, tfEndereco, tfEmail;
 
@@ -131,6 +138,7 @@ public class ClienteController implements Initializable {
 				tfNome.setText(cliente.getNome());
 				tfEndereco.setText(cliente.getEndereco());
 				tfEmail.setText(cliente.getEmail());
+				dpAniversario.setValue(cliente.getDpAniversario());
 				// depois dos dois cliques é carregada a aba cadastro com os campos ja
 				// preenchidos para edicao
 				tpAbas.getSelectionModel().select(0);
@@ -151,6 +159,7 @@ public class ClienteController implements Initializable {
 		cliente.setNome(tfNome.getText());
 		cliente.setEndereco(tfEndereco.getText());
 		cliente.setEmail(tfEmail.getText());
+		cliente.setDpAniversario(dpAniversario.getValue());
 		// faz a conexão com bd
 		EntityManager em = JPAFactory.geEntityManager();
 		// Iniciando a transação com bd
@@ -208,7 +217,7 @@ public class ClienteController implements Initializable {
 	@FXML
 	void handleIncluir(ActionEvent event) {
 
-		cliente = new Cliente(tfCpf.getText(), tfNome.getText(), tfEndereco.getText(), tfEmail.getText());
+		cliente = new Cliente(tfCpf.getText(), tfNome.getText(), tfEndereco.getText(), tfEmail.getText(),dpAniversario.getValue());
 
 		EntityManager em = JPAFactory.geEntityManager();
 
@@ -241,6 +250,8 @@ public class ClienteController implements Initializable {
 		tfCpf.setText("");
 		tfNome.setText("");
 		tfEmail.setText("");
+		dpAniversario.setValue(null);
+
 		tfEndereco.setText("");
 		// limpando as informacoes do cliente
 		cliente = new Cliente();
