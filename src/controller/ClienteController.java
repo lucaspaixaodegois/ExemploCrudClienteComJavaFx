@@ -27,17 +27,18 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import model.Cliente;
+import repository.ClienteRepository;
 
 //classe controle 
 public class ClienteController implements Initializable {
 	// lista de componentes do aquivo.fxml
 	private Cliente cliente;
 	@FXML
-    private Label lbAniversario;
+	private Label lbAniversario;
 
-    @FXML
-    private DatePicker dpAniversario;
-	
+	@FXML
+	private DatePicker dpAniversario;
+
 	@FXML
 	private TextField tfNome, tfCpf, tfEndereco, tfEmail;
 
@@ -94,23 +95,33 @@ public class ClienteController implements Initializable {
 	// metodo que realiza a ação do botao pesquisar
 	@FXML
 	void handlePesquisar(ActionEvent event) {
+	
+		
 		// System.out.println("pesquisar");// print utilizado para testar botao antes de
 		// fazer sql
 		//////////////////////////////////////////////////////////////////////////////////////////
 		// faz conecao com banco
-		EntityManager em = JPAFactory.geEntityManager();
-		// sql que busca pelo nome considerando letras maiusculas e minusculas informado
-		// no textbox da busca
-		Query query = em.createQuery("SELECT c FROM Cliente c WHERE lower(c.nome)  like lower( :nome )");
-		// pegando o valor inormado no campo da busca
-		query.setParameter("nome", "%" + tfPesquisar.getText() + "%");
-		// cria lista de clientes com o retorno da consulta sql
-		List<Cliente> lista = query.getResultList();
-		// verifica se a lista está vazia ou nula, caso esteja emite um alerta,
-		// informando que nada foi encontrado
-		if (lista == null || lista.isEmpty()) {
-			// alerta do tipo imformação
-			Alert alerta = new Alert(AlertType.INFORMATION);
+//		EntityManager em = JPAFactory.geEntityManager();
+//		// sql que busca pelo nome considerando letras maiusculas e minusculas informado
+//		// no textbox da busca
+//		Query query = em.createQuery("SELECT c FROM Cliente c WHERE lower(c.nome)  like lower( :nome )");
+//		// pegando o valor inormado no campo da busca
+	
+
+//		query.setParameter("nome", "%" + tfPesquisar.getText() + "%");
+//		// cria lista de clientes com o retorno da consulta sql
+//		List<Cliente> lista = query.getResultList();
+//		// verifica se a lista está vazia ou nula, caso esteja emite um alerta,
+//		// informando que nada foi encontrado
+//		
+
+		ClienteRepository repository= new ClienteRepository(JPAFactory.geEntityManager());
+		List<Cliente> lista =repository.getClientes(tfPesquisar.getText());
+		
+		//if (lista == null || lista.isEmpty()) {
+		if(lista.isEmpty()) {
+		// alerta do tipo imformação
+		Alert alerta = new Alert(AlertType.INFORMATION);
 			// setando titulo da janela
 			alerta.setTitle("Informação");
 			// titulo da mensagem no caso nao teve
@@ -154,22 +165,31 @@ public class ClienteController implements Initializable {
 	// evento para alterar os dados puchados do db, ou seja, é o edit
 	@FXML
 	void handleAlterar(ActionEvent event) {
+
 		// setando os dados puchado do bd
 		cliente.setCpf(tfCpf.getText());
 		cliente.setNome(tfNome.getText());
 		cliente.setEndereco(tfEndereco.getText());
 		cliente.setEmail(tfEmail.getText());
 		cliente.setDpAniversario(dpAniversario.getValue());
+
+		ClienteRepository repository = new ClienteRepository(JPAFactory.geEntityManager());
+		repository.getEntityManeger().getTransaction().begin();
+		repository.save(cliente);
+		repository.getEntityManeger().getTransaction().commit();
+		repository.getEntityManeger().close();
+
 		// faz a conexão com bd
-		EntityManager em = JPAFactory.geEntityManager();
-		// Iniciando a transação com bd
-		em.getTransaction().begin();
-		// altera o registro existente no bd
-		em.merge(cliente);
-		// salvar e finaliza a transicao
-		em.getTransaction().commit();
-		em.close();// fecha conexao com bd
-		// alerta do tipo imformação
+//		EntityManager em = JPAFactory.geEntityManager();
+//		// Iniciando a transação com bd
+//		em.getTransaction().begin();
+//		// altera o registro existente no bd
+//		em.merge(cliente);
+//		// salvar e finaliza a transicao
+//		em.getTransaction().commit();
+//		em.close();// fecha conexao com bd
+//		// alerta do tipo imformação
+
 		Alert alerta = new Alert(AlertType.INFORMATION);
 		// setando titulo da janela
 		alerta.setTitle("Informação");
@@ -188,18 +208,25 @@ public class ClienteController implements Initializable {
 	@FXML
 	void handleExcluir(ActionEvent event) {
 		// faz a conexão com bd
-		EntityManager em = JPAFactory.geEntityManager();
+		// EntityManager em = JPAFactory.geEntityManager();
 
-		// Iniciando a transação com o bd
-		em.getTransaction().begin();
-		// altera o registro existene no bd
-		cliente = em.merge(cliente);
-		// apaga do db o registro informado
-		em.remove(cliente);
-		// salvar e finaliza a transicao
-		em.getTransaction().commit();
-		// fechar conexao com bd
-		em.close();
+		ClienteRepository repository = new ClienteRepository(JPAFactory.geEntityManager());
+		repository.getEntityManeger().getTransaction().begin();
+		repository.remove(cliente);
+		repository.getEntityManeger().getTransaction().commit();
+		repository.getEntityManeger().close();
+
+//		// Iniciando a transação com o bd
+//		em.getTransaction().begin();
+//		// altera o registro existene no bd
+//		cliente = em.merge(cliente);
+//		// apaga do db o registro informado
+//		em.remove(cliente);
+//		// salvar e finaliza a transicao
+//		em.getTransaction().commit();
+//		// fechar conexao com bd
+//		em.close();
+
 		// alerta do tipo imformação
 		Alert alerta = new Alert(AlertType.INFORMATION);
 		// setando titulo da janela
@@ -211,24 +238,35 @@ public class ClienteController implements Initializable {
 		// mosta a janela/mensagem
 		alerta.show();
 		// chama o metodo para limpar campos
+	
 		handleLimpar(event);
 	}
 
 	@FXML
 	void handleIncluir(ActionEvent event) {
 
-		cliente = new Cliente(tfCpf.getText(), tfNome.getText(), tfEndereco.getText(), tfEmail.getText(),dpAniversario.getValue());
+		cliente = new Cliente(tfCpf.getText(), tfNome.getText(), tfEndereco.getText(), tfEmail.getText(),
+				dpAniversario.getValue());
 
-		EntityManager em = JPAFactory.geEntityManager();
+		ClienteRepository repository = new ClienteRepository(JPAFactory.geEntityManager());
+
+		// ClienteRepository repository = new ClienteRepository2(em);// aqui vamos usar
+		// mesma transação para inseir dois tabelas diferentes
 
 		// Iniciando a transação
-		em.getTransaction().begin();
+		// em.getTransaction().begin();
+		repository.getEntityManeger().getTransaction().begin();
+		repository.save(cliente);
 		// inserindo novo registro no bd
-		em.persist(cliente);
+		// em.persist(cliente);
 		// salvar e finaliza a transicao
-		em.getTransaction().commit();
+		// em.getTransaction().commit();
+		repository.getEntityManeger().getTransaction().commit();
+		repository.getEntityManeger().close();
+		// em.close();
+		// chama o metodo para limpar campos
+		handleLimpar(event);
 
-		em.close();
 		// alerta do tipo imformação
 		Alert alerta = new Alert(AlertType.INFORMATION);
 		// setando titulo da janela
@@ -239,8 +277,7 @@ public class ClienteController implements Initializable {
 		alerta.setContentText("Cliente cadastrado com sucesso!");
 		// mosta a janela/mensagem
 		alerta.show();
-		// chama o metodo para limpar campos
-		handleLimpar(event);
+
 	}
 
 	// metodo que limpa os campos
